@@ -1,0 +1,56 @@
+{% extends "layout.html" %}
+
+{% block container %}
+<div class="container" style="margin-top: 200px; background-color: rgb(24, 40, 65); width: 400px; padding: 20px; border-radius: 5px;">
+<form class="max-w-sm mx-auto" action="/login" method="POST">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="container mx-auto mt-4 text-center">
+            {% for category, message in messages %}
+                {% if category == "login" %}
+                    <div class="alert alert-{{ category }} p-4 mb-4 rounded-lg">
+                        {{ message }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="mb-5">
+      <label for="username" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Usuario</label>
+      <input type="text" id="username" name="username" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required />
+    </div>
+    <div class="mb-5">
+      <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Password</label>
+      <input type="password" id="password" name="password" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required />
+    </div>
+    <br>
+    <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
+  </form>
+</div>
+<style>
+  .alert {
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid transparent;
+      border-radius: 4px;
+  }
+  .alert-success {
+      color: #3c763d;
+      background-color: #dff0d8;
+      border-color: #d6e9c6;
+  }
+  .alert-warning {
+      color: #8a6d3b;
+      background-color: #fcf8e3;
+      border-color: #faebcc;
+  }
+  .alert-login {
+      color: #a94442;
+      background-color: #f2dede;
+      border-color: #ebccd1;
+  }
+</style>
+{% endblock %}

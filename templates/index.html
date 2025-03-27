@@ -1,0 +1,221 @@
+{% extends "layout.html" %}
+{% import "_macros.html" as macros %}
+
+
+
+{% block container %}
+<div class="max-w-4xl mx-auto p-8  rounded-lg shadow-xl" style="margin-top: 20p;">
+    <br>
+    <div>
+        <div class="ml-auto">
+        {% if current_user.is_authenticated %}
+        <span class="navbar-text mr-2" style="color: black;">Usuario: {{ current_user.username }}</span>
+        <a href="{{ url_for('logout') }}" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Cerrar Sesión</a>
+        {% endif %}
+        </div>
+    </div>
+    <br>
+    <form action="/pedido" method="POST" class="p-8 rounded-lg shadow-md border border-gray-100"
+        style="background-color: rgb(156, 187, 227); padding: 20px;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <h1 style="color: black; font-size: 20px; font-weight: bold;">Realizar Pedido</h1>
+        <br>
+        <h2 style="color: black; font-size: 15px; font-weight: bold;">Datos Cliente</h2>
+        <div class="flex flex-col md:flex-row md:items-center md:gap-4">
+            <div class="flex items-center">
+                <span class="text-black mr-2">Nombre:</span>
+                <input type="text" name="nombre" value="{{ session.get('cliente', {}).get('nombre', '') }}"
+                    class="border p-2 bg-white" required>
+            </div>
+            <div class="flex items-center" style="margin-left: 150px;">
+                <span class="text-black mr-2">Dirección:</span>
+                <input type="text" name="direccion" value="{{ session.get('cliente', {}).get('direccion', '') }}"
+                    class="border p-2 bg-white" required>
+            </div>
+            <div class="flex items-center" style="margin-left: 150px;">
+                <span class="text-black mr-2">Teléfono:</span>
+                <input type="text" name="telefono" value="{{ session.get('cliente', {}).get('telefono', '') }}"
+                    class="border p-2 bg-white" required>
+            </div>
+        </div>
+        <br>
+        <h2 style="color: black; font-size: 15px; font-weight: bold;">Datos Pizza</h2>
+        <div class="flex gap-4">
+            <fieldset class="border rounded-lg p-4 bg-gray-100 w-1/2" style="background-color: white;">
+                <h1 class="text-lg font-medium text-gray-700 mb-2">Tamaño Pizza</h1>
+                <div class="space-y-2">
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="radio" name="size" value="chica" class="accent-blue-500" required>
+                        <span class="text-gray-600">Chica $40</span>
+                    </label>
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="radio" name="size" value="mediana" class="accent-blue-500">
+                        <span class="text-gray-600">Mediana $80</span>
+                    </label>
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="radio" name="size" value="grande" class="accent-blue-500">
+                        <span class="text-gray-600">Grande $120</span>
+                    </label>
+                </div>
+            </fieldset>
+            <fieldset class="border rounded-lg p-4 bg-gray-100 w-1/2"
+                style="margin-left: 150px; background-color: white;">
+                <h1 class="text-lg font-medium text-gray-700 mb-2">Ingredientes</h1>
+                <div class="space-y-2">
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="checkbox" name="ingredientes" value="jamon" class="accent-green-500">
+                        <span class="text-gray-600">Jamón +$10</span>
+                    </label>
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="checkbox" name="ingredientes" value="piña" class="accent-green-500">
+                        <span class="text-gray-600">Piña +$10</span>
+                    </label>
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="checkbox" name="ingredientes" value="champiñones" class="accent-green-500">
+                        <span class="text-gray-600">Champiñones +$10</span>
+                    </label>
+                </div>
+            </fieldset>
+            <div class="mt-6 flex items-center" style="margin-left: 150px;">
+                <label class="mr-2 font-medium text-gray-600">Num. de Pizzas:</label>
+                <input type="number" name="num_pizzas" min="1" class="border p-2 w-20 focus:ring-2 focus:ring-blue-400"
+                    style="background-color: white;" required>
+
+            </div>
+        </div>
+        <br>
+        <button type="submit"
+            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Agregar</button>
+    </form>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="container mx-auto mt-4">
+            {% for category, message in messages %}
+                {% if category == "index" %}
+                    <div class="alert alert-{{ category }} p-4 mb-4 rounded-lg">
+                        {{ message }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endwith %}
+    <br>
+    <div class="flex gap-4 p-8 rounded-lg shadow-md border border-gray-100"
+        style="background-color: rgb(156, 187, 227); padding: 20px;">
+        <div class="mt-8 w-1/2">
+            <h1 style="color: black; font-size: 20px; font-weight: bold;">Pedidos</h1>
+            <br>
+            <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+                <table class="w-full text-sm text-left text-gray-500">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">Nombre</th>
+                            <th scope="col" class="px-6 py-3">Teléfono</th>
+                            <th scope="col" class="px-6 py-3">Tamaño</th>
+                            <th scope="col" class="px-6 py-3">Ingredientes</th>
+                            <th scope="col" class="px-6 py-3">Número pizzas</th>
+                            <th scope="col" class="px-6 py-3">Subtotal</th>
+                            <th scope="col" class="px-6 py-3">Opciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pedido in pedidos %}
+                        <tr class="bg-white border-b hover:bg-gray-100 transition duration-200">
+                            <td class="px-6 py-4">{{ pedido.nombre }}</td>
+                            <td class="px-6 py-4">{{ pedido.telefono }}</td>
+                            <td class="px-6 py-4">{{ pedido.size }}</td>
+                            <td class="px-6 py-4">{{ ", ".join(pedido.ingredientes) }}</td>
+                            <td class="px-6 py-4">{{ pedido.num_pizzas }}</td>
+                            <td class="px-6 py-4">${{ pedido.subtotal }}</td>
+                            <td class="px-6 py-4">
+                                <form action="{{ url_for('quitar_pedido', index=loop.index0) }}" method="POST">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit"
+                                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+                                        Eliminar
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <form action="{{ url_for('terminar_pedidos') }}" method="POST" class="mt-4">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit"
+                    class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Terminar</button>
+            </form>
+        </div>
+        <div class="mt-8 w-1/2" style="margin-left: 20px;">
+            <div class="flex gap-4 p-8 rounded-lg shadow-md border border-gray-100"
+                style="background-color: white; padding: 20px;">
+                <div class="mt-8 w-full">
+                    <h1 style="color: black; font-size: 20px;   font-weight: bold;">Filtrar Ventas</h1>
+                    <div class="flex items-center">
+                        <label class="mr-4">
+                            <input type="radio" name="filtro_ventas" value="dia" checked class="accent-blue-500">
+                            Ventas por Día
+                        </label>
+                        <label>
+                            <input type="radio" name="filtro_ventas" value="mes" class="accent-blue-500">
+                            Ventas por Mes
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <br>
+            <h1 style="color: black; font-size: 20px; font-weight: bold;">Ventas del día</h1>
+            <br>
+            <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+                <table class="w-full text-sm text-left text-gray-500">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">Nombre del Cliente</th>
+                            <th scope="col" class="px-6 py-3">Monto Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cliente, info in ventas.items() %}
+                        <tr class="bg-white border-b hover:bg-gray-50 transition duration-200">
+                            <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">{{ cliente }}</td>
+                            <td class="px-6 py-4 text-green-600 font-semibold">${{ "%.2f"|format(info.montoTotal) }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-4">
+                <h2 class="text-lg font-semibold text-gray-700">Ventas totales del día: ${{ "%.2f"|format(total_ventas)
+                    }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .alert {
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+    }
+    .alert-success {
+        color: #3c763d;
+        background-color: #dff0d8;
+        border-color: #d6e9c6;
+    }
+    .alert-warning {
+        color: #8a6d3b;
+        background-color: #fcf8e3;
+        border-color: #faebcc;
+    }
+    .alert-error {
+        color: #a94442;
+        background-color: #f2dede;
+        border-color: #ebccd1;
+    }
+</style>
+
+{% endblock %}

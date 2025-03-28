@@ -21,5 +21,15 @@ class PizzasForm(FlaskForm):
     cantidad = IntegerField('Número de Pizzas', validators=[DataRequired()])
     submit = SubmitField('Agregar pedido')
     
+class UsuariosForm(FlaskForm):
+    username = StringField('username', validators=[DataRequired()])
+    password = StringField('password', validators=[DataRequired()])
+    submit = SubmitField('Iniciar Sesión')
+    
+class ProveedoresForm(FlaskForm):
+    nombre = StringField('nombre', validators=[DataRequired()])
+    empresa = StringField('empresa', validators=[DataRequired()])
+    telefono = StringField('telefono', validators=[DataRequired()])
+    submit = SubmitField('Agregar Proveedor')
 
 

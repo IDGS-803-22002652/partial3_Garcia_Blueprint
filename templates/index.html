@@ -8,14 +8,16 @@
     <br>
     <div>
         <div class="ml-auto">
-        {% if current_user.is_authenticated %}
-        <span class="navbar-text mr-2" style="color: black;">Usuario: {{ current_user.username }}</span>
-        <a href="{{ url_for('logout') }}" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Cerrar Sesión</a>
-        {% endif %}
+            {% if current_user.is_authenticated %}
+            <span class="navbar-text mr-2" style="color: black;">Usuario: {{ current_user.username }}</span>
+            <a href="{{ url_for('auth.logout') }}"
+                class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Cerrar
+                Sesión</a>
+            {% endif %}
         </div>
     </div>
     <br>
-    <form action="/pedido" method="POST" class="p-8 rounded-lg shadow-md border border-gray-100"
+    <form action="{{ url_for('pizzas.pedido') }}" method="POST" class="p-8 rounded-lg shadow-md border border-gray-100"
         style="background-color: rgb(156, 187, 227); padding: 20px;">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <h1 style="color: black; font-size: 20px; font-weight: bold;">Realizar Pedido</h1>
@@ -88,17 +90,17 @@
             class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Agregar</button>
     </form>
     {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-        <div class="container mx-auto mt-4">
-            {% for category, message in messages %}
-                {% if category == "index" %}
-                    <div class="alert alert-{{ category }} p-4 mb-4 rounded-lg">
-                        {{ message }}
-                    </div>
-                {% endif %}
-            {% endfor %}
+    {% if messages %}
+    <div class="container mx-auto mt-4">
+        {% for category, message in messages %}
+        {% if category == "index" %}
+        <div class="alert alert-{{ category }} p-4 mb-4 rounded-lg">
+            {{ message }}
         </div>
         {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
     {% endwith %}
     <br>
     <div class="flex gap-4 p-8 rounded-lg shadow-md border border-gray-100"
@@ -129,7 +131,7 @@
                             <td class="px-6 py-4">{{ pedido.num_pizzas }}</td>
                             <td class="px-6 py-4">${{ pedido.subtotal }}</td>
                             <td class="px-6 py-4">
-                                <form action="{{ url_for('quitar_pedido', index=loop.index0) }}" method="POST">
+                                <form action="{{ url_for('pizzas.quitar_pedido', index=loop.index0) }}" method="POST">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit"
                                         class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
@@ -142,50 +144,80 @@
                     </tbody>
                 </table>
             </div>
-            <form action="{{ url_for('terminar_pedidos') }}" method="POST" class="mt-4">
+            <form action="{{ url_for('pizzas.terminar_pedidos') }}" method="POST" class="mt-4">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit"
                     class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Terminar</button>
             </form>
         </div>
         <div class="mt-8 w-1/2" style="margin-left: 20px;">
-            <div class="flex gap-4 p-8 rounded-lg shadow-md border border-gray-100"
-                style="background-color: white; padding: 20px;">
-                <div class="mt-8 w-full">
-                    <h1 style="color: black; font-size: 20px;   font-weight: bold;">Filtrar Ventas</h1>
-                    <div class="flex items-center">
-                        <label class="mr-4">
-                            <input type="radio" name="filtro_ventas" value="dia" checked class="accent-blue-500">
-                            Ventas por Día
-                        </label>
-                        <label>
-                            <input type="radio" name="filtro_ventas" value="mes" class="accent-blue-500">
-                            Ventas por Mes
-                        </label>
-                    </div>
+            <div class="flex gap-4 p-8 rounded-lg shadow-md border border-gray-100 bg-white p-5">
+                <div class="w-full">
+                    <h1 class="text-xl font-bold text-black mb-4">Filtrar Ventas</h1>
+                    <form method="GET" action="{{ url_for('pizzas.index') }}" class="space-y-4">
+                        <div class="flex gap-4 justify-center">
+                            <label class="flex items-center gap-2">
+                                <input type="radio" name="filter_type" value="day" {% if current_filter=='day'
+                                    %}checked{% endif %} class="accent-blue-500">
+                                <span>Ventas por Día</span>
+                            </label>
+
+                            <label class="flex items-center gap-2">
+                                <input type="radio" name="filter_type" value="month" {% if current_filter=='month'
+                                    %}checked{% endif %} class="accent-blue-500">
+                                <span>Ventas por Mes</span>
+                            </label>
+                        </div>
+                        <div class="flex gap-4 justify-center items-center">
+                            {% if current_filter == 'day' %}
+                            <input type="date" name="specific_date" value="{{ selected_date }}"
+                                class="border p-2 rounded">
+                            {% else %}
+                            <input type="month" name="specific_date" value="{{ selected_date }}"
+                                class="border p-2 rounded">
+                            {% endif %}
+
+                            <button type="submit"
+                                class="bg-blue-700 hover:bg-blue-800 text-white font-medium py-2 px-4 rounded">
+                                Filtrar
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
             <br>
-            <h1 style="color: black; font-size: 20px; font-weight: bold;">Ventas del día</h1>
-            <br>
+            <h1 class="text-xl font-bold text-black mb-4">
+                {% if current_filter == 'day' %}
+                Ventas del {% if selected_date %}{{ selected_date }}{% else %}día actual{% endif %}
+                {% else %}
+                Ventas de {% if selected_date %}{{ selected_date }}{% else %}este mes{% endif %}
+                {% endif %}
+            </h1>
+
             <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
                 <table class="w-full text-sm text-left text-gray-500">
                     <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                         <tr>
-                            <th scope="col" class="px-6 py-3">Nombre del Cliente</th>
-                            <th scope="col" class="px-6 py-3">Monto Total</th>
+                            <th scope="col" class="px-6 py-3">Cliente</th>
+                            <th scope="col" class="px-6 py-3">Total Gastado</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for cliente, info in ventas.items() %}
-                        <tr class="bg-white border-b hover:bg-gray-50 transition duration-200">
-                            <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">{{ cliente }}</td>
+                        <tr class="bg-white border-b hover:bg-gray-50">
+                            <td class="px-6 py-4 font-medium text-gray-900">{{ cliente }}</td>
                             <td class="px-6 py-4 text-green-600 font-semibold">${{ "%.2f"|format(info.montoTotal) }}
                             </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+            </div>
+
+            <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+                <h2 class="text-lg font-semibold text-gray-700">
+                    Total de ventas: <span class="text-blue-700">${{ "%.2f"|format(total_ventas) }}</span>
+                </h2>
             </div>
             <div class="mt-4">
                 <h2 class="text-lg font-semibold text-gray-700">Ventas totales del día: ${{ "%.2f"|format(total_ventas)
@@ -201,16 +233,19 @@
         border: 1px solid transparent;
         border-radius: 4px;
     }
+
     .alert-success {
         color: #3c763d;
         background-color: #dff0d8;
         border-color: #d6e9c6;
     }
+
     .alert-warning {
         color: #8a6d3b;
         background-color: #fcf8e3;
         border-color: #faebcc;
     }
+
     .alert-error {
         color: #a94442;
         background-color: #f2dede;

@@ -37,13 +37,21 @@ class Venta(db.Model):
     cliente = db.relationship('Cliente', backref='ventas')
     pedido = db.relationship('Pedidos', backref='ventas')
     
-class User(db.Model, UserMixin):  
+    
+class User(db.Model, UserMixin):
+    ROLES = {
+        1: 'Usuario',
+        2: 'Administrador'
+    }
+    
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
-
-    def __init__(self, username, password=None, password_hash=None):
+    rol = db.Column(db.Integer, nullable=False, default=1)
+    
+    def __init__(self, username, password=None, password_hash=None, rol=1):
         self.username = username
+        self.rol = rol
         if password_hash:
             self.password = password_hash
         elif password:
@@ -54,15 +62,41 @@ class User(db.Model, UserMixin):
         
     def check_password(self, password):
         return check_password_hash(self.password, password)
-
+    
+    def get_role_name(self):
+        return self.ROLES.get(self.rol, 'Desconocido')
+    
+    @classmethod
+    def create_user(cls, username, password, rol=1):
+        if User.query.filter_by(username=username).first():
+            return None
+            
+        try:
+            user = cls(username=username, rol=rol)
+            user.set_password(password)
+            db.session.add(user)
+            db.session.commit()
+            return user
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error al crear usuario: {str(e)}")
+            return None
+        
 class ModelUser:
     @classmethod
-    def login(cls, db, username, password):
+    def login(cls, username, password):
         try:
             user = User.query.filter_by(username=username).first()
             if user and user.check_password(password):
                 return user
             return None
-        except SQLAlchemyError as e:
-            print(f"Error en la conexión a la base de datos: {str(e)}")
+        except Exception as e:
+            print(f"Error de autenticación: {str(e)}")
             return None
+        
+class Proveedor(db.Model):
+    __tablename__ = 'proveedor'
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(100))
+    empresa = db.Column(db.String(100))
+    telefono = db.Column(db.String(50))

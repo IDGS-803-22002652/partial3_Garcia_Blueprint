@@ -51,6 +51,6 @@ def editar(id):
         proveedor.telefono = form.telefono.data
         db.session.commit()
         flash('Proveedor actualizado correctamente', 'success')
-        return redirect(url_for('provedores.index'))
+        return redirect(url_for('provedores.editar', id=id))
     
     return render_template('editar_proveedor.html', form=form, proveedor=proveedor)
